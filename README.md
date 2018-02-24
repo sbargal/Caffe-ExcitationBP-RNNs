@@ -7,6 +7,8 @@ This is a Caffe implementation of Excitation Backprop for RNNs described in
 
 __This software implementation is provided for academic research and non-commercial purposes only.  This implementation is provided without warranty.__
 
+> [Repo for Excitation Backprop for CNNs](https://github.com/jimmie33/Caffe-ExcitationBP)
+
 ## Prerequisites
 1. The same prerequisites as Caffe
 2. Anaconda (python packages)

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 #include "caffe/layer.hpp"
 #include "caffe/layers/lstm_layer.hpp"
@@ -18,6 +19,14 @@ __device__ Dtype tanh(const Dtype x) {
 }
 
 template <typename Dtype>
+__device__ Dtype relu(const Dtype x) {
+  if (x>0)
+    return Dtype(x);
+  else
+    return Dtype(0);
+}
+
+template <typename Dtype>
 __global__ void LSTMActsForward(const int nthreads, const int dim,
                                 const Dtype* X, Dtype* X_acts) {
   CUDA_KERNEL_LOOP(index, nthreads) {
@@ -26,7 +35,7 @@ __global__ void LSTMActsForward(const int nthreads, const int dim,
     if (d < 3 * dim) {
       X_acts[index] = sigmoid(X[index]);
     } else {
-      X_acts[index] = tanh(X[index]);
+      X_acts[index] = relu(X[index]);
     }
   }
 }
@@ -42,11 +51,11 @@ __global__ void LSTMUnitForward(const int nthreads, const int dim,
     const Dtype i = X_offset[d];
     const Dtype f = X_offset[1 * dim + d];
     const Dtype o = X_offset[2 * dim + d];
-    const Dtype g = X_offset[3 * dim + d];
+    const Dtype g = (X_offset[3 * dim + d]);                      
     const Dtype c_prev = C_prev[index];
     const Dtype c = cont[n] * f * c_prev + i * g;
     C[index] = c;
-    const Dtype tanh_c = tanh(c);
+    const Dtype tanh_c = relu(c);                          
     H[index] = o * tanh_c;
   }
 }
@@ -83,19 +92,18 @@ __global__ void LSTMUnitBackward(const int nthreads, const int dim,
     const Dtype* X_offset = X + 4 * dim * n;
     const Dtype i = X_offset[d];
     const Dtype f = X_offset[1 * dim + d];
-    const Dtype o = X_offset[2 * dim + d];
-    const Dtype g = X_offset[3 * dim + d];
+    const Dtype o = X_offset[2 * dim + d];  
+    const Dtype g = (X_offset[3 * dim + d]);                          
     const Dtype c_prev = C_prev[index];
     const Dtype c = C[index];
-    const Dtype tanh_c = tanh(c);
+    const Dtype tanh_c = relu(c);                                    
     Dtype* c_prev_diff = C_prev_diff + index;
     Dtype* X_diff_offset = X_diff + 4 * dim * n;
     Dtype* i_diff = X_diff_offset + d;
     Dtype* f_diff = X_diff_offset + 1 * dim + d;
     Dtype* o_diff = X_diff_offset + 2 * dim + d;
     Dtype* g_diff = X_diff_offset + 3 * dim + d;
-    const Dtype c_term_diff =
-        C_diff[index] + H_diff[index] * o * (1 - tanh_c * tanh_c);
+	const Dtype c_term_diff = C_diff[index] + H_diff[index] * o * int(c>0);
     const Dtype cont_n = cont[n];
     *c_prev_diff = cont_n * c_term_diff * f;
     *i_diff = c_term_diff * g;
@@ -115,7 +123,11 @@ __global__ void LSTMActsBackward(const int nthreads, const int dim,
     if (d < 3 * dim) {
       X_diff[index] = X_acts_diff[index] * X_act * (Dtype(1) - X_act);
     } else {
-      X_diff[index] = X_acts_diff[index] * (Dtype(1) - X_act * X_act);
+	  if (X_act > 0){
+        X_diff[index] = X_acts_diff[index] * 1;                  
+      }else{
+	    X_diff[index] = X_acts_diff[index] * 0;
+		}
     }
   }
 }
@@ -149,6 +161,36 @@ void LSTMUnitLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   CUDA_POST_KERNEL_CHECK;
 }
 
+template <typename Dtype>
+void LSTMUnitLayer<Dtype>::Backward_eb_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down,
+    const vector<Blob<Dtype>*>& bottom) {
+  CHECK(!propagate_down[2]) << "Cannot backpropagate to sequence indicators.";
+  if (!propagate_down[0] && !propagate_down[1]) { return; }
+
+  const int count = top[1]->count();
+  const Dtype* C_prev = bottom[0]->gpu_data();
+  const Dtype* X_acts = X_acts_.gpu_data();
+  const Dtype* cont = bottom[2]->gpu_data();
+  const Dtype* C = top[0]->gpu_data();
+  const Dtype* H = top[1]->gpu_data();
+  const Dtype* C_diff = top[0]->gpu_diff();
+  const Dtype* H_diff = top[1]->gpu_diff();
+  Dtype* C_prev_diff = bottom[0]->mutable_gpu_diff();
+  Dtype* X_acts_diff = X_acts_.mutable_gpu_diff();
+  LSTMUnitBackward<Dtype>  // NOLINT_NEXT_LINE(whitespace/operators)
+      <<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(count, hidden_dim_,
+      C_prev, X_acts, C, H, cont, C_diff, H_diff, C_prev_diff, X_acts_diff);
+  CUDA_POST_KERNEL_CHECK;
+  const int X_count = bottom[1]->count();
+  Dtype* X_diff = bottom[1]->mutable_gpu_diff();
+  LSTMActsBackward<Dtype>  // NOLINT_NEXT_LINE(whitespace/operators)
+      <<<CAFFE_GET_BLOCKS(X_count), CAFFE_CUDA_NUM_THREADS>>>(
+      X_count, hidden_dim_, X_acts, X_acts_diff, X_diff);
+  CUDA_POST_KERNEL_CHECK;
+} 
+
 INSTANTIATE_LAYER_GPU_FUNCS(LSTMUnitLayer);
+INSTANTIATE_LAYER_EB_GPU_FUNCS(LSTMUnitLayer);
 
 }  // namespace caffe

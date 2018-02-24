@@ -25,6 +25,12 @@ void LSTMLayer<Dtype>::RecurrentOutputBlobNames(vector<string>* names) const {
 }
 
 template <typename Dtype>
+void LSTMLayer<Dtype>::OutputBlobNames(vector<string>* names) const {
+  names->resize(1);
+  (*names)[0] = "h";
+}
+
+template <typename Dtype>
 void LSTMLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
   const int num_output = this->layer_param_.recurrent_param().num_output();
   const int num_blobs = 2;
@@ -35,12 +41,6 @@ void LSTMLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
     (*shapes)[i].add_dim(this->N_);
     (*shapes)[i].add_dim(num_output);
   }
-}
-
-template <typename Dtype>
-void LSTMLayer<Dtype>::OutputBlobNames(vector<string>* names) const {
-  names->resize(1);
-  (*names)[0] = "h";
 }
 
 template <typename Dtype>
@@ -133,7 +133,6 @@ void LSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     BlobShape* new_shape =
          reshape_param->mutable_reshape_param()->mutable_shape();
     new_shape->add_dim(1);  // One timestep.
-    // Should infer this->N as the dimension so we can reshape on batch size.
     new_shape->add_dim(-1);
     new_shape->add_dim(
         x_static_transform_param->inner_product_param().num_output());
@@ -152,7 +151,7 @@ void LSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   output_concat_layer.set_type("Concat");
   output_concat_layer.add_top("h");
   output_concat_layer.mutable_concat_param()->set_axis(0);
-
+    
   for (int t = 1; t <= this->T_; ++t) {
     string tm1s = format_int(t - 1);
     string ts = format_int(t);
@@ -223,7 +222,7 @@ void LSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
       lstm_unit_param->add_bottom("gate_input_" + ts);
       lstm_unit_param->add_bottom("cont_" + ts);
       lstm_unit_param->add_top("c_" + ts);
-      lstm_unit_param->add_top("h_" + ts);
+      lstm_unit_param->add_top("h_" + ts); 
       lstm_unit_param->set_name("unit_" + ts);
     }
     output_concat_layer.add_bottom("h_" + ts);

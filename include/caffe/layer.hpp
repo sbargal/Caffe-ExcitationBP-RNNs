@@ -417,7 +417,7 @@ class Layer {
   virtual void CheckBlobCounts(const vector<Blob<Dtype>*>& bottom,
                                const vector<Blob<Dtype>*>& top) {
     if (ExactNumBottomBlobs() >= 0) {
-      CHECK_EQ(ExactNumBottomBlobs(), bottom.size())
+	  CHECK_EQ(ExactNumBottomBlobs(), bottom.size())
           << type() << " Layer takes " << ExactNumBottomBlobs()
           << " bottom blob(s) as input.";
     }
@@ -432,7 +432,7 @@ class Layer {
           << " bottom blob(s) as input.";
     }
     if (ExactNumTopBlobs() >= 0) {
-      CHECK_EQ(ExactNumTopBlobs(), top.size())
+		CHECK_EQ(ExactNumTopBlobs(), top.size())
           << type() << " Layer produces " << ExactNumTopBlobs()
           << " top blob(s) as output.";
     }

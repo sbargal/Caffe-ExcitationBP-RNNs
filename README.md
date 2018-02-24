@@ -1,10 +1,12 @@
-# Caffe-ExcitationBP
+# Caffe-ExcitationBP-RNNs
 
-This is a Caffe implementation of Excitation Backprop described in
+This is a Caffe implementation of Excitation Backprop for RNNs described in
 
-> [Jianming Zhang, Zhe Lin, Jonathan Brandt, Xiaohui Shen, Stan Sclaroff. "Top-down Neural Attention by Excitation Backprop." ECCV, 2016. (oral)](http://cs-people.bu.edu/jmzhang/excitationbp.html)
+> [Sarah Adel Bargal*, Andrea Zunino*, Donghyun Kim, Jianming Zhang, Vittorio Murino, Stan Sclaroff. "Excitation Backprop for RNNs." CVPR, 2018.](https://arxiv.org/abs/1711.06778)
 
-__This software implementation is provided for academic research and non-commercial purposes only.  This implementation is provided without warranty.  The Excitation Backprop method described in the above paper and implemented in this software is patent-pending by Adobe.__
+__This software implementation is provided for academic research and non-commercial purposes only.  This implementation is provided without warranty.__
+
+> [Repo for Excitation Backprop for CNNs](https://github.com/jimmie33/Caffe-ExcitationBP)
 
 ## Prerequisites
 1. The same prerequisites as Caffe
@@ -15,10 +17,8 @@ __This software implementation is provided for academic research and non-commerc
 2. Enter the **root_folder** and compile the code the same way as in [Caffe](http://caffe.berkeleyvision.org/installation.html).
   - Our code is tested in GPU mode, so make sure to activate the GPU code when compiling the code.
   - Make sure to compile pycaffe, the python interface
-3. Enter **root_folder/ExcitationBP**, run **demo.ipynb** using the python notebook. It will automatically download the pre-trained GoogleNet model for COCO and show you how to compute the contrastive attention map. For details for running the python notebook remotely on a server, see [here](https://coderwall.com/p/ohk6cg/remote-access-to-ipython-notebooks-via-ssh).
+3. Enter **root_folder/excitationBP-RNNs**, run **demo.ipynb** using the python notebook. It will show you how to compute the spatiotemporal saliency maps of a video, and includes the examples in the demo video. For details of running the python notebook remotely on a server, see [here](https://coderwall.com/p/ohk6cg/remote-access-to-ipython-notebooks-via-ssh).
 
 ## Other comments
-1. We also implemented the gradient based method and the deconv method compared in our paper. See **demo.ipynb**.
-2. We implemented both GPU and CPU version of Excitation Backprop. Change `caffe.set_mode_eb_gpu()` to `caffe.set_mode_eb_cpu()` to run the CPU version.
-3. Our pre-train model is modified to be fully convolutional, so that images of any size and aspect raioe can be directly processed.
-4. To apply your own CNN model, you need to modify the deploy.prototxt according to **root_folder/models/COCO/deploy.prototxt**. Basically, you need to add a dummy loss layer at the end of the file. Make sure to remove any dropout layers.
+1. We implemented both GPU and CPU versions of Excitation Backprop for RNNs. Change `caffe.set_mode_eb_gpu()` to `caffe.set_mode_eb_cpu()` to run the CPU version.
+2. To apply your own CNN-LSTM model, you need to modify **root_folder/models/VGG16_LSTM/deploy.prototxt**. You need to add a dummy loss layer at the end of the file.

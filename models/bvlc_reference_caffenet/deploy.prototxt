@@ -211,3 +211,11 @@ layer {
   bottom: "fc8"
   top: "prob"
 }
+
+layer {
+  bottom: "prob"
+  bottom: "prob"
+  top: "loss"
+  name: "dummyLoss"
+  type: "EuclideanLoss"
+}

@@ -1,4 +1,5 @@
 #include <vector>
+#include<iostream>
 
 #include "caffe/layers/split_layer.hpp"
 #include "caffe/util/math_functions.hpp"
@@ -18,6 +19,7 @@ void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     CHECK_NE(top[i], bottom[0]) << this->type() << " Layer does not "
         "allow in-place computation.";
     top[i]->ReshapeLike(*bottom[0]);
+	//std::cout<<count_<< " "<<top[i]->count()<<" "<<top.size()<<std::endl;
     CHECK_EQ(count_, top[i]->count());
   }
 }

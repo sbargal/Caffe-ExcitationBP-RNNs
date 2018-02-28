@@ -21,4 +21,5 @@ __This software implementation is provided for academic research and non-commerc
 
 ## Other comments
 1. We implemented both GPU and CPU versions of Excitation Backprop for RNNs. Change `caffe.set_mode_eb_gpu()` to `caffe.set_mode_eb_cpu()` to run the CPU version.
-2. To apply your own CNN-LSTM model, you need to modify **root_folder/models/VGG16_LSTM/deploy.prototxt**. You need to add a dummy loss layer at the end of the file.
+2. You can download a pre-trained action recognition model at [this link](https://www.dropbox.com/sh/vxn6xkzujtnmody/AABqBVIGXGXbzFO3b5LE8hQWa?dl=0). The model must be placed in the folder **root_folder/models/VGG16_LSTM/**
+3. To apply your own CNN-LSTM model, you need to modify **root_folder/models/VGG16_LSTM/deploy.prototxt**. You need to add a dummy loss layer at the end of the file.

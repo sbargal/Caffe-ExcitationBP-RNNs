@@ -2,7 +2,7 @@
 
 This is a Caffe implementation of Excitation Backprop for RNNs described in
 
-> [Sarah Adel Bargal*, Andrea Zunino*, Donghyun Kim, Jianming Zhang, Vittorio Murino, Stan Sclaroff. "Excitation Backprop for RNNs." CVPR, 2018.](https://arxiv.org/abs/1711.06778)
+> [Sarah Adel Bargal*, Andrea Zunino*, Donghyun Kim, Jianming Zhang, Vittorio Murino, Stan Sclaroff. "Excitation Backprop for RNNs." CVPR, 2018.](http://openaccess.thecvf.com/content_cvpr_2018/html/Bargal_Excitation_Backprop_for_CVPR_2018_paper.html)
 
 __This software implementation is provided for academic research and non-commercial purposes only.  This implementation is provided without warranty.__
 
